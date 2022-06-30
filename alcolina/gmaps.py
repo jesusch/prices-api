@@ -3,7 +3,6 @@ import geopy.distance
 from pydantic import BaseModel
 from .gas_station import GasStation, Prices
 
-api_key = 'AIzaSyAzSwu4JuZ7wHnocT4ipRTFROkneDIc5B8'
 DISTANCE = 0.1
 
 gmaps = googlemaps.Client(key=api_key)
