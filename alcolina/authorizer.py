@@ -5,8 +5,11 @@ Licensed under the Apache License, Version 2.0 (the "License"). You may not use 
 or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 """
 from __future__ import print_function
+from enum import Enum
 
 import re
+
+from pydantic import BaseModel, IPvAnyAddress
 
 
 def lambda_handler(event, context):
@@ -67,7 +70,7 @@ def lambda_handler(event, context):
 
     return authResponse
 
-class HttpVerb:
+class HttpVerb(str, Enum):
     GET     = "GET"
     POST    = "POST"
     PUT     = "PUT"
@@ -76,6 +79,34 @@ class HttpVerb:
     DELETE  = "DELETE"
     OPTIONS = "OPTIONS"
     ALL     = "*"
+
+class AWSRequestContextHTTP(BaseModel):
+    method: HttpVerb
+    path: str
+    protocol: str
+    sourceIp: IPvAnyAddress
+    userAgent: str
+
+
+class AWSRequestContext(BaseModel):
+    accountId: int
+    apiId: str
+    domainName: str
+    domainPrefix: str
+    http: AWSRequestContextHTTP
+    requestId: str
+    routeKey: str
+    stage: str
+    time: str
+    timeEpoch: int
+class AWSEvent(BaseModel):
+    version: float
+    type: str
+    routeArn: str
+    routeKey: str
+    rawPath: str
+    rawQueryString: str
+    requestContext: AWSRequestContext
 
 class AuthPolicy(object):
     awsAccountId = ""
@@ -234,6 +265,8 @@ class AuthPolicy(object):
         return policy
 
 if __name__ == '__main__':
+
+
 
     event = {
         'version': '2.0',
