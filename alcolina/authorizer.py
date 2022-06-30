@@ -13,8 +13,24 @@ from typing import Any
 import jwt
 from pydantic import BaseModel, IPvAnyAddress
 
-SECRET = os.environ.get('SECRET')
+SECRET = os.environ.get('SECRET', )
+ALGORITHMS=['HS256']
 
+
+def get_token(event:dict):
+    auth = event.get('headers', {}).get('Authorization', 'Bearer bla')
+    parts = auth.split(' ')
+    if len(parts) != 2:
+        raise Exception('Unauthorized')
+    if parts[0] != 'Bearer':
+        raise Exception('Unauthorized')
+    this_jwt = parts[1]
+    token = jwt.decode(
+        this_jwt,
+        key=SECRET,
+        algorithms=ALGORITHMS,
+    )
+    return token
 
 def lambda_handler(event, context):
     """Do not print the auth token unless absolutely necessary """
@@ -43,10 +59,8 @@ def lambda_handler(event, context):
     """made with the same token"""
 
     """the example policy below denies access to all resources in the RestApi"""
-    print(event)
     aws_event = AWSEvent.parse_obj(event)
     tmp = aws_event.routeArn.split(':')
-
     principalId = "user|a1b2c3d4"
     #print(event)
     #jwt.decode(token, key=SECRET, algorithms=['HS256'])
@@ -60,7 +74,13 @@ def lambda_handler(event, context):
         stage = aws_event.requestContext.stage,
         region = tmp[3],
     )
-    policy.denyAllMethods()
+
+    try:
+        get_token(event)
+        policy.allowAllMethods()
+    except Exception as e:
+        print(e)
+        policy.denyAllMethods()
     """policy.allowMethod(HttpVerb.GET, "/pets/*")"""
 
     # Finally, build the policy
@@ -308,6 +328,6 @@ if __name__ == '__main__':
     )
 
     print(token)
-    print(jwt.decode(token, key=SECRET, algorithms=['HS256']))
+    #print(jwt.decode(token, key=SECRET, algorithms=['HS256']))
 
     #print(lambda_handler(event, {}))

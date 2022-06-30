@@ -14,7 +14,9 @@ provider:
     authorizers:
       customAuthorizer:
         type: request
-        functionName: authorizer
+        functionName: customAuthorizer
+        identitySource:
+          - $request.header.Authorization
   iam:
     role:
       statements:
@@ -32,7 +34,7 @@ provider:
 
 
 functions:
-  authorizer:
+  customAuthorizer:
     handler: alcolina.authorizer.lambda_handler
   get_pbras_prices:
     handler: handler.get_pbras_prices
@@ -42,6 +44,7 @@ functions:
           method: get
           authorizer:
             name: customAuthorizer
+            type: request
 
   get_gas_station_price:
     handler: handler.get_gas_station_price
@@ -51,6 +54,7 @@ functions:
           method: get
           authorizer:
             name: customAuthorizer
+            type: request
 
   set_gas_station_price:
     handler: handler.set_gas_station_price
@@ -60,6 +64,7 @@ functions:
           method: post
           authorizer:
             name: customAuthorizer
+            type: request
 
 package:
   patterns:
@@ -76,3 +81,5 @@ custom:
   pythonRequirements:
     dockerizePip: false
     slim: true
+  serverless-offline:
+    ignoreJWTSignature: true
