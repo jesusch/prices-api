@@ -19,6 +19,13 @@ provider:
             - 's3:GetObject'
           Resource:
           - arn:aws:s3:::alcolina-pbras-prices/prices/pbras.prices.json
+          - arn:aws:s3:::alcolina-pbras-prices/prices/stations/station=*/prices.json
+        - Effect: Allow
+          Action:
+            - 's3:PutObject'
+          Resource:
+          - arn:aws:s3:::alcolina-pbras-prices/prices/stations/station=*/prices.json
+
 
 functions:
   get_pbras_prices:
