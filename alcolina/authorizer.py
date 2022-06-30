@@ -15,7 +15,6 @@ from pydantic import BaseModel, IPvAnyAddress
 def lambda_handler(event, context):
     """Do not print the auth token unless absolutely necessary """
     #print("Client token: " + event['authorizationToken'])
-    print("Method ARN: " + event['routeArn'])
     """validate the incoming token"""
     """and produce the principal user identifier associated with the token"""
 
@@ -41,14 +40,18 @@ def lambda_handler(event, context):
     """made with the same token"""
 
     """the example policy below denies access to all resources in the RestApi"""
-    tmp = event['routeArn'].split(':')
+    aws_event = AWSEvent.parse_obj(event)
+    tmp = aws_event.routeArn.split(':')
     apiGatewayArnTmp = tmp[5].split('/')
     awsAccountId = tmp[4]
 
-    policy = AuthPolicy(principalId, awsAccountId)
-    policy.restApiId = apiGatewayArnTmp[0]
-    policy.region = tmp[3]
-    policy.stage = apiGatewayArnTmp[1]
+    policy = AuthPolicy(
+        principalId='',
+        awsAccountId=aws_event.requestContext.accountId,
+        restApiId=aws_event.requestContext.apiId,
+        stage = aws_event.requestContext.stage,
+        region = tmp[3],
+    )
     policy.denyAllMethods()
     """policy.allowMethod(HttpVerb.GET, "/pets/*")"""
 
@@ -108,12 +111,12 @@ class AWSEvent(BaseModel):
     rawQueryString: str
     requestContext: AWSRequestContext
 
-class AuthPolicy(object):
-    awsAccountId = ""
+class AuthPolicy(BaseModel):
+    awsAccountId: int
     """The AWS account id the policy will be generated for. This is used to create the method ARNs."""
     principalId = ""
     """The principal used for the policy, this should be a unique identifier for the end user."""
-    version = "2012-10-17"
+    version: str = "2012-10-17"
     """The policy version used for the evaluation. This should always be '2012-10-17'"""
     pathRegex = "^[/.a-zA-Z0-9-\*]+$"
     """The regular expression used to validate resource paths for the policy"""
@@ -127,7 +130,7 @@ class AuthPolicy(object):
     denyMethods = []
 
 
-    restApiId = "<<restApiId>>"
+    restApiId: str = "<<restApiId>>"
     """ Replace the placeholder value with a default API Gateway API id to be used in the policy.
     Beware of using '*' since it will not simply mean any API Gateway API id, because stars will greedily expand over '/' or other separators.
     See https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_resource.html for more details. """
@@ -142,11 +145,8 @@ class AuthPolicy(object):
     Beware of using '*' since it will not simply mean any stage, because stars will greedily expand over '/' or other separators.
     See https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_resource.html for more details. """
 
-    def __init__(self, principal, awsAccountId):
-        self.awsAccountId = awsAccountId
-        self.principalId = principal
-        self.allowMethods = []
-        self.denyMethods = []
+    allowMethods = []
+    denyMethods = []
 
     def _addMethod(self, effect, verb, resource, conditions):
         """Adds a method to the internal lists of allowed or denied methods. Each object in
@@ -161,13 +161,8 @@ class AuthPolicy(object):
         if resource[:1] == "/":
             resource = resource[1:]
 
-        resourceArn = ("arn:aws:execute-api:" +
-            self.region + ":" +
-            self.awsAccountId + ":" +
-            self.restApiId + "/" +
-            self.stage + "/" +
-            verb + "/" +
-            resource)
+        resourceArn = f"arn:aws:execute-api:{self.region}:{self.awsAccountId}:" + \
+            f"{self.restApiId}/{self.stage}/{verb}/{resource}"  #+
 
         if effect.lower() == "allow":
             self.allowMethods.append({
