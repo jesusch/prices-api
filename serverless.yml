@@ -11,6 +11,10 @@ provider:
     name: alcolina-sls-deployments-930581755718-sa-east-1
   httpApi:
     cors: true
+    authorizers:
+      customAuthorizer:
+        type: request
+        functionName: authorizer
   iam:
     role:
       statements:
@@ -28,12 +32,16 @@ provider:
 
 
 functions:
+  authorizer:
+    handler: alcolina.authorizer.lambda_handler
   get_pbras_prices:
     handler: handler.get_pbras_prices
     events:
       - httpApi:
           path: /pbras/prices
           method: get
+          authorizer:
+            name: customAuthorizer
 
   get_gas_station_price:
     handler: handler.get_gas_station_price
@@ -41,6 +49,8 @@ functions:
       - httpApi:
           path: /gas_station/{id}/price
           method: get
+          authorizer:
+            name: customAuthorizer
 
   set_gas_station_price:
     handler: handler.set_gas_station_price
@@ -48,6 +58,8 @@ functions:
       - httpApi:
           path: /gas_station/{id}/price
           method: post
+          authorizer:
+            name: customAuthorizer
 
 package:
   patterns:
