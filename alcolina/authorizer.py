@@ -12,7 +12,7 @@ import re
 def lambda_handler(event, context):
     """Do not print the auth token unless absolutely necessary """
     #print("Client token: " + event['authorizationToken'])
-    print("Method ARN: " + event['methodArn'])
+    print("Method ARN: " + event['routeArn'])
     """validate the incoming token"""
     """and produce the principal user identifier associated with the token"""
 
@@ -38,7 +38,7 @@ def lambda_handler(event, context):
     """made with the same token"""
 
     """the example policy below denies access to all resources in the RestApi"""
-    tmp = event['methodArn'].split(':')
+    tmp = event['routeArn'].split(':')
     apiGatewayArnTmp = tmp[5].split('/')
     awsAccountId = tmp[4]
 
@@ -236,8 +236,26 @@ class AuthPolicy(object):
 if __name__ == '__main__':
 
     event = {
-        "type":"TOKEN",
-        "authorizationToken":"allow",
-        "methodArn":"arn:aws:execute-api:us-west-2:123456789012:ymy8tbxw7b/*/GET/"
+        'version': '2.0',
+        'type': 'REQUEST',
+        'routeArn': 'arn:aws:execute-api:sa-east-1:930581755718:dk8mniuofd/$default/GET/pbras/prices',
+        'identitySource': None,
+        'routeKey': 'GET /pbras/prices',
+        'rawPath': '/pbras/prices',
+        'rawQueryString': '',
+        'headers': {'accept': '*/*', 'content-length': '0', 'host': 'dk8mniuofd.execute-api.sa-east-1.amazonaws.com', 'user-agent': 'curl/7.79.1', 'x-amzn-trace-id': 'Root=1-62bd8849-36648bc10112e8507c6dce83', 'x-forwarded-for': '179.98.206.19', 'x-forwarded-port': '443', 'x-forwarded-proto': 'https'},
+        'requestContext': {
+            'accountId': '930581755718',
+            'apiId': 'dk8mniuofd',
+            'domainName': 'dk8mniuofd.execute-api.sa-east-1.amazonaws.com',
+            'domainPrefix': 'dk8mniuofd',
+            'http': {'method': 'GET', 'path': '/pbras/prices', 'protocol': 'HTTP/1.1', 'sourceIp': '179.98.206.19', 'userAgent': 'curl/7.79.1'},
+            'requestId': 'UiI7hhCuGjQEJmg=',
+            'routeKey': 'GET /pbras/prices',
+            'stage': '$default',
+            'time': '30/Jun/2022:11:26:01 +0000',
+            'timeEpoch': 1656588361575
+        }
     }
+
     print(lambda_handler(event, {}))
