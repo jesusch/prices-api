@@ -8,6 +8,7 @@ __pycache__/
 
 # other
 node_modules/
+.serverless/
 
 # Distribution / packaging
 .Python

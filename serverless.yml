@@ -46,6 +46,7 @@ package:
   patterns:
     - '!**'
     - './handler.py'
+    - './alcolina/**.py'
 
 plugins:
   # - serverless-dynamodb-local
