@@ -1,6 +1,6 @@
 from datetime import datetime
 import json
-from alcolina.gas_station import GasStation, Location, Prices, get_gas_station, get_gas_station_prices
+from alcolina.gas_station import GasStation, Prices
 from alcolina.aws import s3_res, BUCKET
 
 
@@ -35,9 +35,9 @@ def set_gas_station_price(event:dict, context):
 
 if __name__ == '__main__':
     # examples
-    pbras = Location(lat=-23.5848746, lng=-46.6443862)  # ChIJGcka-IhZzpQRDCuAT8rOlNQ
-    mobile = Location(lat=-23.6041059, lng=-46.6754449)  # ChIJu1Z4o7xQzpQREPdxo0E5RtI
-    shell = Location(lat=-23.5924086, lng=-46.6479811)  # ChIJ_bhQ0MI5zpQR7Mq50u8JyQ4
+    #pbras = Location(lat=-23.5848746, lng=-46.6443862)  # ChIJGcka-IhZzpQRDCuAT8rOlNQ
+    #mobile = Location(lat=-23.6041059, lng=-46.6754449)  # ChIJu1Z4o7xQzpQREPdxo0E5RtI
+    #shell = Location(lat=-23.5924086, lng=-46.6479811)  # ChIJ_bhQ0MI5zpQR7Mq50u8JyQ4
     event = {
         'pathParameters': {'id': 'ChIJGcka-IhZzpQRDCuAT8rOlNQ'},
         'Body': '{"etanol": 4.23, "gasolina": 7.23}'
