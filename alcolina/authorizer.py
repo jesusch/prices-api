@@ -6,10 +6,14 @@ or in the "license" file accompanying this file. This file is distributed on an 
 """
 from __future__ import print_function
 from enum import Enum
+import os
 
 import re
-
+from typing import Any
+import jwt
 from pydantic import BaseModel, IPvAnyAddress
+
+SECRET = os.environ.get('SECRET')
 
 
 def lambda_handler(event, context):
@@ -22,7 +26,6 @@ def lambda_handler(event, context):
     """1. Call out to OAuth provider"""
     """2. Decode a JWT token inline"""
     """3. Lookup in a self-managed DB"""
-    principalId = "user|a1b2c3d4"
 
     """you can send a 401 Unauthorized response to the client by failing like so:"""
     """raise Exception('Unauthorized')"""
@@ -40,13 +43,18 @@ def lambda_handler(event, context):
     """made with the same token"""
 
     """the example policy below denies access to all resources in the RestApi"""
+    print(event)
     aws_event = AWSEvent.parse_obj(event)
     tmp = aws_event.routeArn.split(':')
-    apiGatewayArnTmp = tmp[5].split('/')
-    awsAccountId = tmp[4]
+
+    principalId = "user|a1b2c3d4"
+    #print(event)
+    #jwt.decode(token, key=SECRET, algorithms=['HS256'])
+
+
 
     policy = AuthPolicy(
-        principalId='',
+        principalId=principalId,
         awsAccountId=aws_event.requestContext.accountId,
         restApiId=aws_event.requestContext.apiId,
         stage = aws_event.requestContext.stage,
@@ -57,6 +65,7 @@ def lambda_handler(event, context):
 
     # Finally, build the policy
     authResponse = policy.build()
+    print(authResponse)
 
     # new! -- add additional key-value pairs associated with the authenticated principal
     # these are made available by APIGW like so: $context.authorizer.<key>
@@ -84,37 +93,39 @@ class HttpVerb(str, Enum):
     ALL     = "*"
 
 class AWSRequestContextHTTP(BaseModel):
-    method: HttpVerb
-    path: str
-    protocol: str
-    sourceIp: IPvAnyAddress
-    userAgent: str
+    method: HttpVerb = HttpVerb.GET
+    path: str = '/bla'
+    protocol: str = 'HTTP/1.1'
+    sourceIp: IPvAnyAddress = '127.0.0.1'
+    userAgent: str = 'curl'
 
 
 class AWSRequestContext(BaseModel):
-    accountId: int
+    accountId: Any = 123456789012
     apiId: str
-    domainName: str
-    domainPrefix: str
-    http: AWSRequestContextHTTP
+    domainName: str = 'dk8mniuofd.execute-api.sa-east-1.amazonaws.com'
+    # domainPrefix: str
+    http: AWSRequestContextHTTP = AWSRequestContextHTTP()
     requestId: str
-    routeKey: str
-    stage: str
-    time: str
-    timeEpoch: int
+    routeKey: str = 'GET /pbras/prices'
+    stage: str = '$default'
+    time: str = '30/Jun/2022:11:26:01 +0000'
+    timeEpoch: int = 1656588361575
+
+
 class AWSEvent(BaseModel):
-    version: float
+    version: float = 2.0
     type: str
-    routeArn: str
-    routeKey: str
-    rawPath: str
-    rawQueryString: str
+    routeArn: str = 'arn:aws:execute-api:sa-east-1:123456789012:random-api-id/dev/GET/pbras/prices'
+    routeKey: str = 'GET /pbras/prices'
+    rawPath: str = '/pbras/prices'
+    rawQueryString: str = ''
     requestContext: AWSRequestContext
 
 class AuthPolicy(BaseModel):
-    awsAccountId: int
+    awsAccountId: Any = 123456789012
     """The AWS account id the policy will be generated for. This is used to create the method ARNs."""
-    principalId = ""
+    principalId = "asd"
     """The principal used for the policy, this should be a unique identifier for the end user."""
     version: str = "2012-10-17"
     """The policy version used for the evaluation. This should always be '2012-10-17'"""
@@ -286,4 +297,17 @@ if __name__ == '__main__':
         }
     }
 
-    print(lambda_handler(event, {}))
+    payload_data = {
+        # "sub": "4242",
+        # "name": "Jessica Temporal",
+        # "nickname": "Jess"
+    }
+    token = jwt.encode(
+        payload=payload_data,
+        key=SECRET
+    )
+
+    print(token)
+    print(jwt.decode(token, key=SECRET, algorithms=['HS256']))
+
+    #print(lambda_handler(event, {}))
