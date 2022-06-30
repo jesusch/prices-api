@@ -1,0 +1,58 @@
+service: prices
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: python3.9
+  region: sa-east-1
+  logRetentionInDays: 14
+  versionFunctions: false
+  deploymentBucket:
+    name: alcolina-sls-deployments-930581755718-sa-east-1
+  httpApi:
+    cors: true
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - 's3:GetObject'
+          Resource:
+          - arn:aws:s3:::alcolina-pbras-prices/prices/pbras.prices.json
+
+functions:
+  get_pbras_prices:
+    handler: handler.get_pbras_prices
+    events:
+      - httpApi:
+          path: /pbras/prices
+          method: get
+
+  get_gas_station_price:
+    handler: handler.get_gas_station_price
+    events:
+      - httpApi:
+          path: /gas_station/{id}/price
+          method: get
+
+  set_gas_station_price:
+    handler: handler.set_gas_station_price
+    events:
+      - httpApi:
+          path: /gas_station/{id}/price
+          method: post
+
+package:
+  patterns:
+    - '!**'
+    - './handler.py'
+
+plugins:
+  # - serverless-dynamodb-local
+  - serverless-offline
+  - serverless-python-requirements
+
+custom:
+  pythonRequirements:
+    dockerizePip: false
+    slim: true
