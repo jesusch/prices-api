@@ -25,6 +25,10 @@ fake_users_db = {
         "hashed_password": "fakehashedsecret2",
         "disabled": True,
     },
+    "app_user": {
+        "username": "alcolina",
+        "disabled": False,
+    }
 }
 
 
@@ -32,7 +36,7 @@ class User(BaseModel):
     username: str
     email: Union[str, None] = None
     full_name: Union[str, None] = None
-    disabled: Union[bool, None] = None
+    disabled: bool = True
 
 class UserInDB(User):
     hashed_password: str
