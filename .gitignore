@@ -9,6 +9,7 @@ __pycache__/
 # other
 node_modules/
 .serverless/
+requirements.txt
 
 # Distribution / packaging
 .Python
