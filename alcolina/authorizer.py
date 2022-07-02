@@ -13,7 +13,7 @@ from typing import Any
 import jwt
 from pydantic import BaseModel, IPvAnyAddress
 
-SECRET = os.environ.get('SECRET', )
+SECRET = os.environ.get('SECRET', 'SECRET')
 ALGORITHMS=['HS256']
 
 
