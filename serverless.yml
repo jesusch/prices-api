@@ -9,6 +9,8 @@ provider:
   versionFunctions: false
   deploymentBucket:
     name: alcolina-sls-deployments-930581755718-sa-east-1
+  layers:
+    - Ref: PythonRequirementsLambdaLayer
   httpApi:
     cors: true
     authorizers:
@@ -79,7 +81,8 @@ plugins:
 
 custom:
   pythonRequirements:
-    dockerizePip: false
+    dockerizePip: true
     slim: true
+    layer: true
   serverless-offline:
     ignoreJWTSignature: true
