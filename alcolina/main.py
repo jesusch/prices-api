@@ -13,13 +13,13 @@ wsgi = Mangum(app)
 
 
 @app.get('/pbras/prices')
-async def get_pbras_prices() -> dict:
+async def get_pbras_prices(current_user: auth.User = Depends(auth.get_current_active_user)) -> dict:
     pbras_prices = s3_res.Object(BUCKET, 'prices/pbras.prices.json')
     return json.load(pbras_prices.get().get('Body'))
 
 
 @app.get('/gas_station/{place_id}/price')
-def get_gas_station_price(place_id: str):
+def get_gas_station_price(place_id: str, current_user: auth.User = Depends(auth.get_current_active_user)):
     gas_station = GasStation(place_id=place_id)
     try:
         gas_station.get_prices()
@@ -28,7 +28,7 @@ def get_gas_station_price(place_id: str):
 
 
 @app.post('/gas_station/{place_id}/price')
-def set_gas_station_price(place_id: str, item: Prices):
+def set_gas_station_price(place_id: str, item: Prices, current_user: auth.User = Depends(auth.get_current_active_user)):
 
     prices = Prices.parse_obj(item)
     gas_station = GasStation(place_id=place_id)
