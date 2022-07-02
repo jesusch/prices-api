@@ -6,15 +6,15 @@ from .aws import BUCKET, s3_res
 
 
 class Prices(BaseModel):
-    dt: datetime
+    dt: datetime = datetime.utcnow()
     """UTC"""
-    etanol: float
-    gasolina: float
+    etanol: float = 0
+    gasolina: float = 0
 
 
 class GasStation(BaseModel):
     place_id: str #'ChIJ10tPiiBazpQRaMAucpT99xE',
-    prices: Optional[Prices]
+    prices: Prices = Prices()
 
     @property
     def s3_obj(self):

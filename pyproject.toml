@@ -8,9 +8,15 @@ authors = ["Bjoern Boschman <bjoern.boschman@tvsquared.com>"]
 python = "^3.9"
 pydantic = "*"
 PyJWT = {version = "*", extras = ["crypto"]}
+fastapi = "*"
+mangum = "*"
+python-jose = {version = "*", extras = ["cryptography"]}
+python-multipart = "*"
+passlib = {version = "*", extras = ["bcrypt"]}
 
 [tool.poetry.dev-dependencies]
 boto3 = "*"
+uvicorn = "*"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
