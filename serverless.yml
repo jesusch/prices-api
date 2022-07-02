@@ -9,16 +9,13 @@ provider:
   versionFunctions: false
   deploymentBucket:
     name: alcolina-sls-deployments-930581755718-sa-east-1
-  layers:
-    - Ref: PythonRequirementsLambdaLayer
+  ecr:
+    # In this section you can define images that will be built locally and uploaded to ECR
+    images:
+      appimage:
+        path: ./
   httpApi:
     cors: true
-    authorizers:
-      customAuthorizer:
-        type: request
-        functionName: customAuthorizer
-        identitySource:
-          - $request.header.Authorization
   iam:
     role:
       statements:
@@ -34,55 +31,19 @@ provider:
           Resource:
           - arn:aws:s3:::alcolina-pbras-prices/prices/stations/station=*/prices.json
 
-
 functions:
-  customAuthorizer:
-    handler: alcolina.authorizer.lambda_handler
-  get_pbras_prices:
-    handler: handler.get_pbras_prices
+  app:
+    image:
+      name: appimage
+      command:
+        - alcolina.main.wsgi
     events:
-      - httpApi:
-          path: /pbras/prices
-          method: get
-          authorizer:
-            name: customAuthorizer
-            type: request
+      - httpApi: '*'
 
-  get_gas_station_price:
-    handler: handler.get_gas_station_price
-    events:
-      - httpApi:
-          path: /gas_station/{id}/price
-          method: get
-          authorizer:
-            name: customAuthorizer
-            type: request
-
-  set_gas_station_price:
-    handler: handler.set_gas_station_price
-    events:
-      - httpApi:
-          path: /gas_station/{id}/price
-          method: post
-          authorizer:
-            name: customAuthorizer
-            type: request
-
-package:
-  patterns:
-    - '!**'
-    - './handler.py'
-    - './alcolina/**.py'
 
 plugins:
-  # - serverless-dynamodb-local
   - serverless-offline
-  - serverless-python-requirements
 
 custom:
-  pythonRequirements:
-    dockerizePip: true
-    slim: true
-    layer: true
   serverless-offline:
     ignoreJWTSignature: true
