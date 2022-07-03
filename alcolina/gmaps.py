@@ -1,77 +1,37 @@
 import googlemaps
-import geopy.distance
-from pydantic import BaseModel
-from .gas_station import GasStation, Prices
 from .settings import settings
+from . import models
 
-DISTANCE = 0.1
+DISTANCE = 1000
 
 gmaps = googlemaps.Client(key=settings.GOOGLEMAPS_API_KEY)
 
-class Location(BaseModel):
-    lat: float
-    lng: float
 
-    @property
-    def set(self):
-        return (self.lat, self.lng)
+def get_gas_stations(loc: models.gmaps.Location, radius=DISTANCE):
+    ret = []
+    next_page_token = None
 
-class PlacesResultGeometry(BaseModel):
-    location: Location
-    #     'viewport': {
-    #         'northeast': {
-    #             'lat': -23.59114462010728,
-    #             'lng': -46.64667487010728},
-    #         'southwest': {
-    #             'lat': -23.59384427989272,
-    #             'lng': -46.64937452989273
-    #         }
-    #     }
-    # },
-
-
-class PlacesResult(BaseModel):
-    business_status: str #'OPERATIONAL',
-    geometry: PlacesResultGeometry
-    # icon: str 'https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/gas_station-71.png',
-    # 'icon_background_color': '#909CE1',
-    # 'icon_mask_base_uri': 'https://maps.gstatic.com/mapfiles/place_api/icons/v2/gas_pinlet',
-    name: str # 'Posto Shell',
-    opening_hours: dict  = {
-        'open_now': True
-    }
-    # 'photos': [
-    #     {'height': 3186, 'html_attributions': ['<a href="https://maps.google.com/maps/contrib/117684703793862723952">Tânia Mara Francisco</a>'], 'photo_reference': 'Aap_uEAWii_sgCF1f-9qM8N46H0veJhFdWthlpkg2A82XuOPFPOb2L8beP9atnbei32tTTsGq7XWUqXlkUH0EurYI1_mZhMWy48rouQXIaPfrmQV34GPtUACN0RNJaH0aLT-V8uAs9OYMesVEg4tAEQGPz_dWOsS6pE8V_RG6xuDFOAhx4dD', 'width': 4073}
-    # ],
-    place_id: str #'ChIJ10tPiiBazpQRaMAucpT99xE',
-    #'plus_code': {'compound_code': 'C952+2R São Paulo, State of São Paulo', 'global_code': '588MC952+2R'},
-    # 'price_level': 2,
-    # 'rating': 3.8,
-    # 'reference': 'ChIJ10tPiiBazpQRaMAucpT99xE',
-    # 'scope': 'GOOGLE',
-    # 'types': ['gas_station', 'point_of_interest', 'establishment'],
-    # 'user_ratings_total': 582,
-    # 'vicinity': 'R. Sena Madureira, 1490 - Vila Clementino, São Paulo'}
-
-    def distance(self, loc:Location):
-        return geopy.distance.geodesic(self.geometry.location.set, loc.set)
-
-
-def get_gas_station(loc: Location) -> GasStation:
+    print('API_CALL: ', next_page_token)
     res = gmaps.places_nearby(
         location=loc.set,
         keyword='gas station',
-        radius=DISTANCE,
+        # radius=radius,
+        rank_by='distance',
+        page_token=next_page_token,
+        type='gas_station',
         # name='gas station'
     )
+    next_page_token = res.get('next_page_token', '')
+    for g in res.get('results'):
+        yield models.gas_station.GasStation.parse_obj(g)
 
-    return [GasStation.parse_obj(r) for r in res.get('results')].pop(-1)
+    #return [GasStation.parse_obj(r) for r in res.get('results')].pop(-1)
 
-def get_gas_station_prices(gas_station: GasStation) -> GasStation:
+def get_gas_station_prices(gas_station: models.gas_station.GasStation) -> models.gas_station.GasStation:
     print(gas_station.place_id)
     return
 
-def set_gas_station_prices(prices: Prices) -> Prices:
+def set_gas_station_prices(prices: models.gas_station.Prices) -> models.gas_station.Prices:
     print(prices.json())
 
     return
