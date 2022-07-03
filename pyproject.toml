@@ -15,6 +15,7 @@ python-multipart = "*"
 passlib = {version = "*", extras = ["bcrypt"]}
 googlemaps = "*"
 geopy = "*"
+python-dotenv = "*"
 
 [tool.poetry.dev-dependencies]
 boto3 = "*"
