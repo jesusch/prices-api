@@ -13,6 +13,8 @@ mangum = "*"
 python-jose = {version = "*", extras = ["cryptography"]}
 python-multipart = "*"
 passlib = {version = "*", extras = ["bcrypt"]}
+googlemaps = "*"
+geopy = "*"
 
 [tool.poetry.dev-dependencies]
 boto3 = "*"

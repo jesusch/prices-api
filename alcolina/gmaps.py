@@ -2,10 +2,11 @@ import googlemaps
 import geopy.distance
 from pydantic import BaseModel
 from .gas_station import GasStation, Prices
+from .settings import settings
 
 DISTANCE = 0.1
 
-gmaps = googlemaps.Client(key=api_key)
+gmaps = googlemaps.Client(key=settings.GOOGLEMAPS_API_KEY)
 
 class Location(BaseModel):
     lat: float
@@ -17,15 +18,6 @@ class Location(BaseModel):
 
 class PlacesResultGeometry(BaseModel):
     location: Location
-
-
-class PlacesResult(BaseModel):
-    business_status: str #'OPERATIONAL',
-    geometry: PlacesResultGeometry
-    #     'location': {
-    #         'lat': -23.5924086,
-    #         'lng': -46.6479811
-    #     },
     #     'viewport': {
     #         'northeast': {
     #             'lat': -23.59114462010728,
@@ -36,6 +28,11 @@ class PlacesResult(BaseModel):
     #         }
     #     }
     # },
+
+
+class PlacesResult(BaseModel):
+    business_status: str #'OPERATIONAL',
+    geometry: PlacesResultGeometry
     # icon: str 'https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/gas_station-71.png',
     # 'icon_background_color': '#909CE1',
     # 'icon_mask_base_uri': 'https://maps.gstatic.com/mapfiles/place_api/icons/v2/gas_pinlet',
